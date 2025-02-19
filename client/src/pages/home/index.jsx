@@ -1,47 +1,66 @@
+import { useEffect, useState } from "react";
 import Loading from "../../components/Loading";
 import ProductCard from "../../components/ProductCard";
-
-const products = [
-  {
-    id: 1,
-    image: "/images/product-01.webp",
-    title: "Product 1",
-    price: "29.99",
-  },
-  {
-    id: 2,
-    image: "/images/product-01.webp",
-    title: "Product 2",
-    price: "39.99",
-  },
-  {
-    id: 3,
-    image: "/images/product-01.webp",
-    title: "Product 3",
-    price: "49.99",
-  },
-  {
-    id: 4,
-    image: "/images/product-01.webp",
-    title: "Product 4",
-    price: "59.99",
-  },
-];
+import axios from "axios";
+import { getProducts } from "../../utils/product";
+import { productCategory } from "../../utils/data";
+import Paginations from "../../components/Pagination";
 
 const HomePage = () => {
-  //   return <Loading />;
+  const [products, setProducts] = useState([]);
+  const [category, setCategory] = useState("");
+  const [keyword, setKeyword] = useState("");
+  useEffect(() => {
+    const getProductsList = async () => {
+      try {
+        const response = await getProducts();
+        if (response.status === true) {
+          setProducts(response.products);
+        }
+      } catch (err) {
+        throw new Error(err);
+      }
+    };
+    getProductsList();
+  }, []);
   return (
-    <main className="flex-grow max-w-7xl mx-auto py-8 px-4">
-      <h2 className="text-3xl font-bold mb-6 text-center">Our Products</h2>
+    <main className="flex-grow">
+      <div className="flex justify-between item-start mb-4">
+        <h2 className="text-3xl font-medium mb-6">Total Products : </h2>
+        <div className="flex item-start">
+          <select
+            name="category"
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            className="w-full border rounded"
+            required
+          >
+            <option value="">Select Category</option>
+            {productCategory?.map((item) => (
+              <option value={item.value}>{item.title}</option>
+            ))}
+          </select>
+          <input
+            className="ms-2 border"
+            type="text"
+            name="keyword"
+            value={keyword}
+            onChange={(e) => setKeyword(e.target.value)}
+          />
+        </div>
+      </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
         {products.map((product) => (
           <ProductCard
-            key={product.id}
-            image={product.image}
+            key={product._id}
+            imageUrl={product.imageUrl}
             title={product.title}
             price={product.price}
           />
         ))}
+      </div>
+      <div className="flex justify-center mt-4">
+        <Paginations />
       </div>
     </main>
   );

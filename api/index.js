@@ -32,5 +32,5 @@ app.use('/api', ProductRouter)
 // Connect database and start server
 await connectDatabase()
 app.listen(PORT, () => {
-    console.log(`server is running on  locahost:${PORT}`)
+    console.log(`server is running on  localhost:${PORT}`)
 })

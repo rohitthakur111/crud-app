@@ -13,8 +13,8 @@ const deleteImage = async (filePath) => {
 
 // Add product
 export const addProduct = async (req, res) => {
-    const { title, description, price, currency, category } = req.body
-    if (!title || !description || !price || !currency || !category) {
+    const { title, description, price, category } = req.body
+    if (!title || !description || !price || !category) {
         return res.status(401).json({
             status: false,
             error: "All field are required"
@@ -29,7 +29,7 @@ export const addProduct = async (req, res) => {
 
         const imageUrl = `products/${req.file.filename}`;
 
-        const product = new Product({ title, description, price, currency, category, imageUrl })
+        const product = new Product({ title, description, price, category, imageUrl })
 
         await product.save();
         return res.status(201).json({
