@@ -1,41 +1,46 @@
-const Paginations = () => {
+const Paginations = ({ pagination, setPage }) => {
+  const { currentPage, totalPages } = pagination;
+
   return (
     <nav aria-label="Page navigation">
       <ul className="inline-flex items-center space-x-1 text-lg">
         {/* Previous Button */}
         <li>
-          <a
+          <button
             href="#"
-            className="px-4 py-2 border border-gray-300 rounded-l-md text-gray-700 bg-white hover:bg-gray-200"
+            className="cursor-pointer px-4 py-2 border border-gray-300 rounded-l-md text-gray-700 bg-white hover:bg-gray-200"
+            onClick={() => setPage(currentPage - 1)}
+            disabled={currentPage === 1}
           >
             Previous
-          </a>
+          </button>
         </li>
 
         {/* Page Numbers */}
-        {[1, 2, 3, 4, 5].map((number) => (
+        {[...Array(totalPages).keys()].map((number) => (
           <li key={number}>
-            <a
-              href="#"
+            <button
+              onClick={() => setPage(number + 1)}
               className={`px-4 py-2 border border-gray-300 ${
-                number === 3
+                number + 1 === currentPage
                   ? "bg-blue-500 text-white font-semibold"
                   : "text-gray-700 bg-white hover:bg-gray-200"
               }`}
             >
-              {number}
-            </a>
+              {number + 1}
+            </button>
           </li>
         ))}
 
         {/* Next Button */}
         <li>
-          <a
-            href="#"
-            className="px-4 py-2 border border-gray-300 rounded-r-md text-gray-700 bg-white hover:bg-gray-200"
+          <button
+            className="cursor-pointer px-4 py-2 border border-gray-300 rounded-r-md text-gray-700 bg-white hover:bg-gray-200"
+            onClick={() => setPage(currentPage + 1)}
+            disabled={currentPage >= totalPages}
           >
             Next
-          </a>
+          </button>
         </li>
       </ul>
     </nav>

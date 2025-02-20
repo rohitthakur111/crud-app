@@ -1,5 +1,6 @@
 import Product from "../models/ProductSchema.js"
 import fs from "fs"
+import url from "url"
 // Delete image of product
 const deleteImage = async (filePath) => {
     console.log(filePath)
@@ -48,13 +49,53 @@ export const addProduct = async (req, res) => {
 // get products list
 export const getProducts = async (req, res) => {
     try {
-        const products = await Product.find()
+        const parseUrl = url.parse(req.url, true)
+        let { currentpage, pagesize, search, category } = parseUrl.query;
+        pagesize = Number(pagesize) ? Number(pagesize) : 5
+
+        let matchStage = {};
+
+        if (search)
+            matchStage = {
+                title: {
+                    $regex: search,
+                    $options: "i"
+                }
+            }
+        if (category) matchStage = { ...matchStage, category: category }
+
+        const totalProducts = await Product.countDocuments(matchStage)
+        const totalPages = Math.ceil(totalProducts / pagesize)
+
+        currentpage = Number(currentpage) && currentpage <= totalPages ? Number(currentpage) : 1
+        const skip = (currentpage - 1) * pagesize
+
+        const pipeline = [
+            {
+                $match: matchStage
+            },
+            {
+                $skip: skip
+            },
+            {
+                $limit: pagesize
+            },
+            {
+                $sort: { price: 1 }
+            }
+        ];
+
+
+        const products = await Product.aggregate(pipeline)
         return res.status(201).json({
             status: true,
-            products: products
+            products: products,
+            currentpage,
+            totalProducts,
+            totalPages
         })
     } catch (err) {
-        res.json(500).json({
+        res.status(500).json({
             status: false,
             error: err.message
         })

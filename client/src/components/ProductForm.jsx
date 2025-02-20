@@ -7,6 +7,7 @@ const ProductForm = ({
   handleChange,
   preview,
   error,
+  required = true,
 }) => {
   return (
     <div className="max-w-lg mx-auto p-5 border rounded-lg shadow-md">
@@ -67,7 +68,7 @@ const ProductForm = ({
           accept="image/*"
           onChange={handleImageChange}
           className="w-full p-2 border rounded"
-          required
+          required={required}
         />
 
         {/* Image Preview */}

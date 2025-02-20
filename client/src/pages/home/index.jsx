@@ -5,28 +5,52 @@ import axios from "axios";
 import { getProducts } from "../../utils/product";
 import { productCategory } from "../../utils/data";
 import Paginations from "../../components/Pagination";
+import { Link } from "react-router-dom";
 
 const HomePage = () => {
   const [products, setProducts] = useState([]);
+  const [totalProducts, setTotalProducts] = useState("");
   const [category, setCategory] = useState("");
   const [keyword, setKeyword] = useState("");
+
+  // Pagination
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    pageSize: 4,
+    totalPages: 1,
+  });
+
+  const setPage = (page) =>
+    setPagination((prev) => ({ ...prev, currentPage: page }));
+
   useEffect(() => {
     const getProductsList = async () => {
       try {
-        const response = await getProducts();
+        const { currentPage, pageSize } = pagination;
+        const query = `currentpage=${currentPage}&pagesize=${pageSize}&search=${keyword}&category=${category}`;
+        const response = await getProducts(query);
         if (response.status === true) {
           setProducts(response.products);
+          setTotalProducts(response.totalProducts);
+          setPagination((prev) => ({
+            ...prev,
+            totalPages: response?.totalPages,
+            currentPage: response.currentpage,
+          }));
         }
       } catch (err) {
         throw new Error(err);
       }
     };
     getProductsList();
-  }, []);
+  }, [category, keyword, pagination.currentPage]);
+
   return (
     <main className="flex-grow">
       <div className="flex justify-between item-start mb-4">
-        <h2 className="text-3xl font-medium mb-6">Total Products : </h2>
+        <h2 className="text-3xl font-medium mb-6">
+          Total Products : {totalProducts}
+        </h2>
         <div className="flex item-start">
           <select
             name="category"
@@ -36,8 +60,10 @@ const HomePage = () => {
             required
           >
             <option value="">Select Category</option>
-            {productCategory?.map((item) => (
-              <option value={item.value}>{item.title}</option>
+            {productCategory?.map((item, i) => (
+              <option key={i} value={item.value}>
+                {item.title}
+              </option>
             ))}
           </select>
           <input
@@ -50,17 +76,21 @@ const HomePage = () => {
         </div>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-        {products.map((product) => (
-          <ProductCard
-            key={product._id}
-            imageUrl={product.imageUrl}
-            title={product.title}
-            price={product.price}
-          />
+        {products.map((product, i) => (
+          <Link to={`/product/${product._id}`} key={i}>
+            <ProductCard
+              key={product._id}
+              imageUrl={product.imageUrl}
+              title={product.title}
+              price={product.price}
+            />
+          </Link>
         ))}
       </div>
       <div className="flex justify-center mt-4">
-        <Paginations />
+        {products?.length > 0 && (
+          <Paginations pagination={pagination} setPage={setPage} />
+        )}
       </div>
     </main>
   );
