@@ -54,3 +54,14 @@ export const deleteProduct = async (id) => {
         throw new Error(err)
     }
 }
+
+
+export const debounce = (callback, delay) => {
+    let timer;
+    return (...args) => {
+        clearTimeout(timer);
+        timer = setTimeout(() => {
+            callback(...args);
+        }, delay);
+    };
+};

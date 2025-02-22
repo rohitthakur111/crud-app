@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Loading from "../../components/Loading";
 import ProductCard from "../../components/ProductCard";
 import axios from "axios";
-import { getProducts } from "../../utils/product";
+import { debounce, getProducts } from "../../utils/product";
 import { productCategory } from "../../utils/data";
 import Paginations from "../../components/Pagination";
 import { Link } from "react-router-dom";
@@ -23,27 +23,34 @@ const HomePage = () => {
   const setPage = (page) =>
     setPagination((prev) => ({ ...prev, currentPage: page }));
 
-  useEffect(() => {
-    const getProductsList = async () => {
-      try {
-        const { currentPage, pageSize } = pagination;
-        const query = `currentpage=${currentPage}&pagesize=${pageSize}&search=${keyword}&category=${category}`;
-        const response = await getProducts(query);
-        if (response.status === true) {
-          setProducts(response.products);
-          setTotalProducts(response.totalProducts);
-          setPagination((prev) => ({
-            ...prev,
-            totalPages: response?.totalPages,
-            currentPage: response.currentpage,
-          }));
-        }
-      } catch (err) {
-        throw new Error(err);
+  const getProductsList = async () => {
+    try {
+      const { currentPage, pageSize } = pagination;
+      const query = `currentpage=${currentPage}&pagesize=${pageSize}&search=${keyword}&category=${category}`;
+      const response = await getProducts(query);
+      if (response.status === true) {
+        setProducts(response.products);
+        setTotalProducts(response.totalProducts);
+        setPagination((prev) => ({
+          ...prev,
+          totalPages: response?.totalPages,
+          currentPage: response.currentpage,
+        }));
       }
-    };
-    getProductsList();
-  }, [category, keyword, pagination.currentPage]);
+    } catch (err) {
+      throw new Error(err);
+    }
+  };
+
+  const debouncedGetProductsList = useCallback(debounce(getProductsList, 500), [
+    keyword,
+    category,
+    pagination.currentPage,
+  ]);
+
+  useEffect(() => {
+    debouncedGetProductsList();
+  }, [keyword, category, pagination.currentPage]);
 
   return (
     <main className="flex-grow">
